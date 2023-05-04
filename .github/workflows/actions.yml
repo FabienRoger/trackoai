@@ -3,6 +3,10 @@ name: Run Python Script
 on:
   schedule:
     - cron: "0 */2 * * *" # Run every two hours
+  push:
+    paths:
+      - ".github/workflows/run_script.yml"
+      - "script.py"
 
 jobs:
   build:
