@@ -14,19 +14,37 @@ GPT3_tokenizer = encoding_for_model("davinci")
 def complete(engine: str, prompt: str, max_tokens: int = 100):
 
     if engine in ["gpt-3.5-turbo", "gpt-4"]:
+        st = time()
         completion = openai.ChatCompletion.create(
             model=engine, messages=[{"role": "user", "content": prompt}], max_tokens=max_tokens, temperature=0
         ).choices[0]["message"]["content"]
+        taken = time() - st
         tokens_in_answer = len(GPT4_tokenizer.encode(completion))
     else:
+        st = time()
         completion = (
             openai.Completion.create(engine=engine, prompt=prompt, max_tokens=max_tokens, temperature=0).choices[0].text
         )
+        taken = time() - st
         tokens_in_answer = len(GPT3_tokenizer.encode(completion))
-    return tokens_in_answer
+    return tokens_in_answer, taken
 
 
 models = ["ada", "babbage", "curie", "davinci", "text-davinci-003", "gpt-3.5-turbo", "gpt-4"]
+
+TINY_MODEL_MAX_TOKS = [10, 50, 90, 130, 170]
+SMALL_MODEL_MAX_TOKS = [10, 50, 90, 130]
+BIG_MODEL_MAX_TOKS = [10, 50, 90]
+
+max_toks_per_model = {
+    "ada": TINY_MODEL_MAX_TOKS,
+    "babbage": TINY_MODEL_MAX_TOKS,
+    "curie": SMALL_MODEL_MAX_TOKS,
+    "davinci": BIG_MODEL_MAX_TOKS,
+    "text-davinci-003": BIG_MODEL_MAX_TOKS,
+    "gpt-3.5-turbo": SMALL_MODEL_MAX_TOKS,
+    "gpt-4": BIG_MODEL_MAX_TOKS,
+}
 
 
 def measure():
@@ -35,15 +53,13 @@ def measure():
     results = {model: [] for model in models}
 
     def target(model, max_tokens):
-        st = time()
-        tokens_in_answer = complete(model, PROMPT, max_tokens)
-        taken = time() - st
+        tokens_in_answer, taken = complete(model, PROMPT, max_tokens)
         with lock:
             results[model].append((taken, tokens_in_answer))
 
     threads = []
     for model in models:
-        for max_tokens in [10, 50, 90]:
+        for max_tokens in max_toks_per_model[model]:
             t = threading.Thread(target=target, args=(model, max_tokens))
             threads.append(t)
             t.start()
