@@ -3,10 +3,6 @@ name: Update metrics
 on:
   schedule:
     - cron: "0 */2 * * *" # Run every two hours
-  push:
-    paths:
-      - ".github/workflows/run_script.yml"
-      - "script.py"
   workflow_dispatch:
 
 jobs:
@@ -37,7 +33,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add -A
-          git diff-index --quiet HEAD || (git commit -a -m "updated logs" --allow-empty)
+          git diff-index --quiet HEAD || (git commit -a -m "updated metrics" --allow-empty)
 
       - name: push changes
         uses: ad-m/github-push-action@v0.6.0
