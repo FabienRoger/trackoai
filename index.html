@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Performance Graph</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<body>
+    <div id="performance-graph" style="width:100%;height:100%;"></div>
+    <script>
+        // Read CSV data
+        async function readCSV(url) {
+            const response = await fetch(url);
+            const data = await response.text();
+            const rows = data.split('\n').slice(1);
+            const non_empty_rows = rows.filter(row => row !== '');
+            const result = non_empty_rows.map(row => {
+                const columns = row.split(',');
+                return {
+                    datetime: columns[0],
+                    model: columns[1],
+                    tokens_per_second: parseFloat(columns[2]),
+                    constant_time_overhead: parseFloat(columns[3])
+                };
+            });
+            return result;
+        }
+
+        // Plot the graph
+        async function plotGraph() {
+            const data = await readCSV('time_mes.csv');
+            const models = [...new Set(data.map(item => item.model))];
+            const traces = models.map(model => {
+                const modelData = data.filter(item => item.model === model);
+                return {
+                    x: modelData.map(item => item.datetime),
+                    y: modelData.map(item => item.tokens_per_second),
+                    mode: 'lines+markers',
+                    name: model
+                };
+            });
+
+            console.log(traces)
+
+            const layout = {
+                title: 'OpenAI API Performance',
+                xaxis: {
+                    title: 'Time'
+                },
+                yaxis: {
+                    title: 'Tokens per Second',
+                    type: 'log'
+                }
+            };
+
+            Plotly.newPlot('performance-graph', traces, layout);
+        }
+
+        plotGraph();
+    </script>
+</body>
+
+</html>
