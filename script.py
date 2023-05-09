@@ -32,7 +32,7 @@ def complete(engine: str, prompt: str, max_tokens: int = 100):
 
 models = ["ada", "babbage", "curie", "davinci", "text-davinci-003", "gpt-3.5-turbo", "gpt-4"]
 
-TINY_MODEL_MAX_TOKS = [10, 50, 90, 130, 170]
+TINY_MODEL_MAX_TOKS = [10, 50, 90, 130, 170, 210]
 SMALL_MODEL_MAX_TOKS = [10, 50, 90, 130]
 BIG_MODEL_MAX_TOKS = [10, 50, 90]
 
