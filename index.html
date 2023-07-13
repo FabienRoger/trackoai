@@ -4,12 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenAI API Performance</title>
+    <title>OpenAI API's Token Generation Speeds</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Open Sans', 'Verdana', 'Arial', sans-serif;
+        }
+    </style>
 </head>
 
 <body>
     <div id="performance-graph" style="width:100%;height:100%;"></div>
+    <div style="margin-left: 1em; font-size: small;">
+        <p>Measurements made using an affine fit over 3 responses of lengths between 10 and 100.</p>
+        <p>Smoothing using the median of the last three measurements.</p>
+    </div>
     <script>
         // Read CSV data
         async function readCSV(url) {
@@ -29,15 +39,25 @@
             return result;
         }
 
+        function median(x, y, z) {
+            return x + y + z - Math.max(x, y, z) - Math.min(x, y, z);
+            // return z;
+        }
+
         // Plot the graph
         async function plotGraph() {
             const data = await readCSV('time_mes.csv');
             const models = [...new Set(data.map(item => item.model))];
             const traces = models.map(model => {
                 const modelData = data.filter(item => item.model === model);
+                let y = [];
+                for (let i = 2; i < modelData.length; i++) {
+                    y.push(median(...modelData.slice(i - 2, i + 1).map(item => item.tokens_per_second)));
+                }
+                let x = modelData.slice(2).map(item => item.datetime);
                 return {
-                    x: modelData.map(item => item.datetime),
-                    y: modelData.map(item => item.tokens_per_second),
+                    x: x,
+                    y: y,
                     mode: 'lines+markers',
                     name: model
                 };
@@ -46,7 +66,7 @@
             console.log(traces)
 
             const layout = {
-                title: 'OpenAI API Performance',
+                title: 'OpenAI API\'s Token Generation Speeds',
                 xaxis: {
                     title: 'Time'
                 },
