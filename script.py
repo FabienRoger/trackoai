@@ -12,8 +12,7 @@ GPT3_tokenizer = encoding_for_model("davinci")
 
 
 def complete(engine: str, prompt: str, max_tokens: int = 100):
-
-    if engine in ["gpt-3.5-turbo", "gpt-4"]:
+    if engine in ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]:
         st = time()
         completion = openai.ChatCompletion.create(
             model=engine, messages=[{"role": "user", "content": prompt}], max_tokens=max_tokens, temperature=0
@@ -30,8 +29,6 @@ def complete(engine: str, prompt: str, max_tokens: int = 100):
     return tokens_in_answer, taken
 
 
-models = ["ada", "babbage", "curie", "davinci", "text-davinci-003", "gpt-3.5-turbo", "gpt-4"]
-
 TINY_MODEL_MAX_TOKS = [10, 50, 100, 150, 200, 250]
 SMALL_MODEL_MAX_TOKS = [10, 50, 100, 150]
 BIG_MODEL_MAX_TOKS = [10, 50, 100]
@@ -39,12 +36,14 @@ BIG_MODEL_MAX_TOKS = [10, 50, 100]
 max_toks_per_model = {
     "ada": TINY_MODEL_MAX_TOKS,
     "babbage": TINY_MODEL_MAX_TOKS,
-    "curie": SMALL_MODEL_MAX_TOKS,
+    "curie": TINY_MODEL_MAX_TOKS,
     "davinci": BIG_MODEL_MAX_TOKS,
-    "text-davinci-003": BIG_MODEL_MAX_TOKS,
-    "gpt-3.5-turbo": SMALL_MODEL_MAX_TOKS,
+    "gpt-3.5-turbo": TINY_MODEL_MAX_TOKS,
+    "gpt-3.5-turbo-instruct": TINY_MODEL_MAX_TOKS,
     "gpt-4": BIG_MODEL_MAX_TOKS,
+    "gpt-4-1106-preview": BIG_MODEL_MAX_TOKS,
 }
+models = list(max_toks_per_model.keys())
 
 
 def measure():
@@ -73,7 +72,11 @@ def measure():
         lr.fit([[z] for z in x], y)
         return lr
 
-    classifiers = {model: fit_classifier(results[model]) for model in models}
+    classifiers = {
+        model: fit_classifier(results[model])
+        for model in models
+        if len(results[model]) == len(max_toks_per_model[model])
+    }
     slopes = {model: classifiers[model].coef_[0] for model in models}
     intercepts = {model: classifiers[model].intercept_ for model in models}
     for model in models:
