@@ -77,20 +77,21 @@ def measure():
         for model in models
         if len(results[model]) == len(max_toks_per_model[model])
     }
-    slopes = {model: classifiers[model].coef_[0] for model in models}
-    intercepts = {model: classifiers[model].intercept_ for model in models}
-    for model in models:
+    kept_models = list(classifiers.keys())
+    slopes = {model: classifiers[model].coef_[0] for model in kept_models}
+    intercepts = {model: classifiers[model].intercept_ for model in kept_models}
+    for model in kept_models:
         second_per_tok = slopes[model]
         tok_per_second = 1 / second_per_tok
         print(f"{model}: {tok_per_second:.2f} tok/s")
 
-    return results, classifiers, slopes, intercepts
+    return results, classifiers, slopes, intercepts, kept_models
 
 
-results, classifiers, slopes, intercepts = measure()
+results, classifiers, slopes, intercepts, kept_models = measure()
 
 time_str = str(datetime.now())
 with open("time_mes.csv", "a") as f:
-    for model in models:
+    for model in kept_models:
         line = ",".join([time_str, model, str(1 / slopes[model]), str(intercepts[model])])
         f.write(line + "\n")
