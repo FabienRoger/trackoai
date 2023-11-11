@@ -12,7 +12,7 @@ GPT3_tokenizer = encoding_for_model("davinci")
 
 
 def complete(engine: str, prompt: str, max_tokens: int = 100):
-    if engine in ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"]:
+    if engine in ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview", "gpt-3.5-turbo-1106"]:
         st = time()
         completion = openai.ChatCompletion.create(
             model=engine, messages=[{"role": "user", "content": prompt}], max_tokens=max_tokens, temperature=0
