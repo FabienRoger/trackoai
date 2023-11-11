@@ -21,6 +21,8 @@
         <p>Smoothing using the median of the last three measurements.</p>
     </div>
     <script>
+        const hiddenByDefault = ['gpt-3.5-turbo-1106', 'ada', 'babbage', 'curie', 'text-davinci-003', 'gpt-3.5-turbo-instruct', 'gpt-4-1106-preview'];
+
         // Read CSV data
         async function readCSV(url) {
             const response = await fetch(url);
@@ -41,7 +43,6 @@
 
         function median(x, y, z) {
             return x + y + z - Math.max(x, y, z) - Math.min(x, y, z);
-            // return z;
         }
 
         // Plot the graph
@@ -59,7 +60,8 @@
                     x: x,
                     y: y,
                     mode: 'lines',
-                    name: model
+                    name: model,
+                    visible: hiddenByDefault.includes(model) ? 'legendonly' : true
                 };
             });
 
@@ -73,7 +75,7 @@
                 yaxis: {
                     title: 'Tokens per Second',
                     type: 'log',
-                    range: [0.3, 2.8],
+                    // range: [0.3, 2.8],
                 }
             };
 
