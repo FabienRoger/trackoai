@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenAI API's Token Generation Speeds</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
     <style>
         body {
@@ -20,13 +19,18 @@
         <p>Measurements made using an affine fit over 3 responses of lengths between 10 and 100.</p>
         <p>Smoothing using the median of the last three measurements.</p>
     </div>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
     <script>
         const hiddenByDefault = ['gpt-3.5-turbo-1106', 'ada', 'babbage', 'curie', 'text-davinci-003', 'gpt-3.5-turbo-instruct', 'gpt-4-1106-preview'];
 
         // Read CSV data
         async function readCSV(url) {
             const response = await fetch(url);
-            const data = await response.text();
+            // const data = await response.text();
+            const blob = await response.blob();
+            const zip = await (new JSZip()).loadAsync(blob);
+            const data = await zip.file('time_mes.csv').async('string');
             const rows = data.split('\n').slice(1);
             const non_empty_rows = rows.filter(row => row !== '');
             const result = non_empty_rows.map(row => {
@@ -47,7 +51,7 @@
 
         // Plot the graph
         async function plotGraph() {
-            const data = await readCSV('time_mes.csv');
+            const data = await readCSV('time_mes.zip');
             const models = [...new Set(data.map(item => item.model))];
             const traces = models.map(model => {
                 const modelData = data.filter(item => item.model === model);
@@ -65,8 +69,6 @@
                 };
             });
 
-            console.log(traces)
-
             const layout = {
                 title: 'OpenAI API\'s Token Generation Speeds',
                 xaxis: {
@@ -75,7 +77,6 @@
                 yaxis: {
                     title: 'Tokens per Second',
                     type: 'log',
-                    // range: [0.3, 2.8],
                 }
             };
 
