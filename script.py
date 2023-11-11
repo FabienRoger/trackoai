@@ -42,6 +42,7 @@ max_toks_per_model = {
     "gpt-3.5-turbo-instruct": TINY_MODEL_MAX_TOKS,
     "gpt-4": BIG_MODEL_MAX_TOKS,
     "gpt-4-1106-preview": BIG_MODEL_MAX_TOKS,
+    "gpt-3.5-turbo-1106": TINY_MODEL_MAX_TOKS,
 }
 models = list(max_toks_per_model.keys())
 
