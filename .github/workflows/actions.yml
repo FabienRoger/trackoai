@@ -28,6 +28,9 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
+      - name: Generate compressed metrics
+        run: python to_zip.py
+
       - name: commit files
         run: |
           git config --local user.email "action@github.com"
