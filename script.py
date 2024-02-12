@@ -11,40 +11,43 @@ GPT4_tokenizer = encoding_for_model("gpt-4")
 GPT3_tokenizer = encoding_for_model("davinci")
 
 
-def complete(engine: str, prompt: str, max_tokens: int = 100):
-    if engine in ["gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview", "gpt-3.5-turbo-1106"]:
-        st = time()
-        completion = openai.ChatCompletion.create(
-            model=engine, messages=[{"role": "user", "content": prompt}], max_tokens=max_tokens, temperature=0
-        ).choices[0]["message"]["content"]
-        taken = time() - st
-        tokens_in_answer = len(GPT4_tokenizer.encode(completion))
-    else:
-        st = time()
-        completion = (
-            openai.Completion.create(engine=engine, prompt=prompt, max_tokens=max_tokens, temperature=0).choices[0].text
-        )
-        taken = time() - st
-        tokens_in_answer = len(GPT3_tokenizer.encode(completion))
-    return tokens_in_answer, taken
-
-
 TINY_MODEL_MAX_TOKS = [10, 50, 100, 150, 200, 250]
 SMALL_MODEL_MAX_TOKS = [10, 50, 100, 150]
 BIG_MODEL_MAX_TOKS = [10, 50, 100]
 
-max_toks_per_model = {
-    "ada": TINY_MODEL_MAX_TOKS,
-    "babbage": TINY_MODEL_MAX_TOKS,
-    "curie": TINY_MODEL_MAX_TOKS,
-    "davinci": BIG_MODEL_MAX_TOKS,
-    "gpt-3.5-turbo": TINY_MODEL_MAX_TOKS,
-    "gpt-3.5-turbo-instruct": TINY_MODEL_MAX_TOKS,
-    "gpt-4": BIG_MODEL_MAX_TOKS,
-    "gpt-4-1106-preview": BIG_MODEL_MAX_TOKS,
-    "gpt-3.5-turbo-1106": TINY_MODEL_MAX_TOKS,
+CHAT = True
+
+model_infos = {
+    # "ada": (TINY_MODEL_MAX_TOKS, GPT3_tokenizer, not CHAT),
+    # "babbage": (TINY_MODEL_MAX_TOKS, GPT3_tokenizer, not CHAT),
+    # "curie": (TINY_MODEL_MAX_TOKS, GPT3_tokenizer, not CHAT),
+    # "davinci": (BIG_MODEL_MAX_TOKS, GPT3_tokenizer, not CHAT),
+    "gpt-3.5-turbo": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
+    "gpt-3.5-turbo-instruct": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
+    "gpt-4": (BIG_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
+    "gpt-4-1106-preview": (BIG_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
+    "gpt-3.5-turbo-1106": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
+    "gpt-4-turbo-preview": (SMALL_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
+    "davinci-002": (SMALL_MODEL_MAX_TOKS, GPT4_tokenizer, not CHAT),
+    "babbage-002": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, not CHAT),
 }
-models = list(max_toks_per_model.keys())
+models = list(model_infos.keys())
+
+
+def complete(engine: str, prompt: str, max_tokens: int = 100):
+    st = time()
+    if model_infos[engine][2]:
+        completion = openai.ChatCompletion.create(
+            model=engine, messages=[{"role": "user", "content": prompt}], max_tokens=max_tokens, temperature=0
+        ).choices[0]["message"]["content"]
+    else:
+        completion = (
+            openai.Completion.create(engine=engine, prompt=prompt, max_tokens=max_tokens, temperature=0).choices[0].text
+        )
+    taken = time() - st
+    tokens_in_answer = len(model_infos[engine][1].encode(completion))
+
+    return tokens_in_answer, taken
 
 
 def measure():
@@ -59,7 +62,7 @@ def measure():
 
     threads = []
     for model in models:
-        for max_tokens in max_toks_per_model[model]:
+        for max_tokens, _, _ in model_infos[model]:
             t = threading.Thread(target=target, args=(model, max_tokens))
             threads.append(t)
             t.start()
@@ -74,9 +77,7 @@ def measure():
         return lr
 
     classifiers = {
-        model: fit_classifier(results[model])
-        for model in models
-        if len(results[model]) == len(max_toks_per_model[model])
+        model: fit_classifier(results[model]) for model in models if len(results[model]) == len(model_infos[model][0])
     }
     kept_models = list(classifiers.keys())
     slopes = {model: classifiers[model].coef_[0] for model in kept_models}
