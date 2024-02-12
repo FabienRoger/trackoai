@@ -23,7 +23,7 @@ model_infos = {
     # "curie": (TINY_MODEL_MAX_TOKS, GPT3_tokenizer, not CHAT),
     # "davinci": (BIG_MODEL_MAX_TOKS, GPT3_tokenizer, not CHAT),
     "gpt-3.5-turbo": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
-    "gpt-3.5-turbo-instruct": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
+    "gpt-3.5-turbo-instruct": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, not CHAT),
     "gpt-4": (BIG_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
     "gpt-4-1106-preview": (BIG_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
     "gpt-3.5-turbo-1106": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
@@ -62,7 +62,7 @@ def measure():
 
     threads = []
     for model in models:
-        for max_tokens, _, _ in model_infos[model]:
+        for max_tokens in model_infos[model][0]:
             t = threading.Thread(target=target, args=(model, max_tokens))
             threads.append(t)
             t.start()
