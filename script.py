@@ -5,7 +5,7 @@ import threading
 from datetime import datetime
 from sklearn.linear_model import LinearRegression
 
-PROMPT = "Let's count to 1.000.000! 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16"
+PROMPT = "Let's count! 1 2 3"
 
 GPT4_tokenizer = encoding_for_model("gpt-4")
 GPT3_tokenizer = encoding_for_model("davinci")
@@ -35,17 +35,30 @@ models = list(model_infos.keys())
 
 
 def complete(engine: str, prompt: str, max_tokens: int = 100):
+    tokenizer = model_infos[engine][1]
+
+    # to avoid early eos
+    logit_bias = {t: 100 for i in range(1, 280 + 1) for t in tokenizer.encode(" " + str(i))}
+
     st = time()
     if model_infos[engine][2]:
         completion = openai.ChatCompletion.create(
-            model=engine, messages=[{"role": "user", "content": prompt}], max_tokens=max_tokens, temperature=0
+            model=engine,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=max_tokens,
+            temperature=0,
+            logit_bias=logit_bias,
         ).choices[0]["message"]["content"]
     else:
         completion = (
-            openai.Completion.create(engine=engine, prompt=prompt, max_tokens=max_tokens, temperature=0).choices[0].text
+            openai.Completion.create(
+                engine=engine, prompt=prompt, max_tokens=max_tokens, temperature=0, logit_bias=logit_bias
+            )
+            .choices[0]
+            .text
         )
     taken = time() - st
-    tokens_in_answer = len(model_infos[engine][1].encode(completion))
+    tokens_in_answer = len(tokenizer.encode(completion))
 
     return tokens_in_answer, taken
 
