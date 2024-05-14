@@ -7,6 +7,7 @@ from sklearn.linear_model import LinearRegression
 
 PROMPT = "Let's count! 1 2 3"
 
+GPT5_tokenizer = encoding_for_model("gpt-4o")
 GPT4_tokenizer = encoding_for_model("gpt-4")
 GPT3_tokenizer = encoding_for_model("davinci")
 
@@ -28,6 +29,7 @@ model_infos = {
     "gpt-4-1106-preview": (BIG_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
     "gpt-3.5-turbo-1106": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
     "gpt-4-turbo-preview": (SMALL_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
+    "gpt-4o": (SMALL_MODEL_MAX_TOKS, GPT5_tokenizer, CHAT),
     "davinci-002": (SMALL_MODEL_MAX_TOKS, GPT4_tokenizer, not CHAT),
     "babbage-002": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, not CHAT),
 }
