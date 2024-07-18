@@ -26,13 +26,14 @@ model_infos = {
     "gpt-3.5-turbo": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
     "gpt-3.5-turbo-instruct": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, not CHAT),
     "gpt-4": (BIG_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
-    "gpt-4-1106-preview": (BIG_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
-    "gpt-3.5-turbo-1106": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
+    # "gpt-4-1106-preview": (BIG_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
+    # "gpt-3.5-turbo-1106": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
     "gpt-4-turbo-preview": (BIG_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
-    "gpt-4-turbo": (SMALL_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
+    "gpt-4-turbo": (BIG_MODEL_MAX_TOKS, GPT4_tokenizer, CHAT),
     "gpt-4o": (SMALL_MODEL_MAX_TOKS, GPT5_tokenizer, CHAT),
     "davinci-002": (SMALL_MODEL_MAX_TOKS, GPT4_tokenizer, not CHAT),
     "babbage-002": (TINY_MODEL_MAX_TOKS, GPT4_tokenizer, not CHAT),
+    "gpt-4o-mini": (TINY_MODEL_MAX_TOKS, GPT5_tokenizer, CHAT),
 }
 models = list(model_infos.keys())
 
